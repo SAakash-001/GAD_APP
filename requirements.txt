@@ -1,0 +1,18 @@
+# For the web interface and user controls
+streamlit
+audio-recorder-streamlit
+plotly
+# For audio processing and feature extraction
+librosa
+soundfile
+
+# For machine learning model training and prediction
+scikit-learn
+pandas
+numpy
+
+# For video file processing (audio extraction)
+moviepy
+
+# For showing the progress bar during model training
+tqdm

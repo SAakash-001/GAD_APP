@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-freeze.txt
+
+# Streamlit
+.streamlit/
+
+# Data, Models, and User Submissions (IMPORTANT)
+data/
+user_submissions/
+saved_models/
+
+# IDE and OS specific
+.idea/
+.vscode/
+*.DS_Store
