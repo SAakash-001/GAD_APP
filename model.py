@@ -6,48 +6,55 @@ import librosa
 import os
 import streamlit as st
 import requests
-from tqdm import tqdm
 
 # --- Configuration: Model Hosting and Local Paths ---
 SAVE_DIR = "saved_models"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
-# IMPORTANT: Replace these placeholder URLs with your actual direct download links.
-# If using Google Drive, use a direct link generator like https://www.gilthonwe.com/files/google-drive-direct-link-generator
+# --- Your Google Drive download links ---
 MODEL_URLS = {
     "gender_model.pkl": "https://drive.google.com/u/0/uc?id=1tmCjAANLNpVE2axNpHPo6IjF8Y42MPP2&export=download",
     "age_model.pkl": "https://drive.google.com/u/0/uc?id=18YQNrUPGOEDvV3FXAOoqtFD_ujiyrXtb&export=download",
     "age_label_encoder.pkl": "https://drive.google.com/u/0/uc?id=10RlIXKbTQY2aUXHQrqv9DTqNjK2xXXPR&export=download"
 }
-# --- Helper Function to Download Models ---
-def download_file(url, save_path):
-    """Downloads a file from a URL, showing a progress bar."""
-    try:
-        response = requests.get(url, stream=True)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
-        
-        total_size = int(response.headers.get('content-length', 0))
-        
-        # Use st.progress for a Streamlit-native progress bar
-        progress_bar = st.progress(0)
-        progress_status = st.empty()
-        
-        bytes_downloaded = 0
-        with open(save_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
+
+# --- NEW: Robust Helper Function to Download Models from Google Drive ---
+def download_file_from_google_drive(id, destination):
+    """
+    Downloads a large file from Google Drive, handling the virus scan warning.
+    """
+    URL = "https://docs.google.com/uc?export=download"
+
+    session = requests.Session()
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = None
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            token = value
+            break
+
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+
+    # Use st.progress for a Streamlit-native progress bar
+    progress_bar = st.progress(0)
+    progress_status = st.empty()
+    total_size = int(response.headers.get('content-length', 0))
+    bytes_downloaded = 0
+    
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(32768):
+            if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
                 bytes_downloaded += len(chunk)
-                # Update progress bar
-                percent_complete = int((bytes_downloaded / total_size) * 100)
-                progress_bar.progress(percent_complete)
-                progress_status.text(f"Downloading {os.path.basename(save_path)}: {percent_complete}%")
-        
-        progress_bar.empty()
-        progress_status.empty()
-        return True
-    except requests.exceptions.RequestException as e:
-        st.error(f"Failed to download {os.path.basename(save_path)}. Error: {e}")
-        return False
+                if total_size > 0:
+                    percent_complete = int((bytes_downloaded / total_size) * 100)
+                    progress_bar.progress(percent_complete)
+                    progress_status.text(f"Downloading {os.path.basename(destination)}: {percent_complete}%")
+
+    progress_bar.empty()
+    progress_status.empty()
 
 # --- Model Loading with Caching and On-Demand Download ---
 @st.cache_resource
@@ -57,18 +64,18 @@ def load_all_artifacts():
     The @st.cache_resource decorator ensures this function runs only once.
     """
     artifacts = {}
-    all_files_present = True
-
     for filename, url in MODEL_URLS.items():
         filepath = os.path.join(SAVE_DIR, filename)
         if not os.path.exists(filepath):
             st.warning(f"Model file '{filename}' not found. Downloading...")
-            if not download_file(url, filepath):
-                st.error(f"Could not download {filename}. The app cannot make predictions.")
-                all_files_present = False
-    
-    if not all_files_present:
-        return None
+            try:
+                # Extract the file ID from the URL
+                file_id = url.split('id=')[1].split('&')[0]
+                download_file_from_google_drive(file_id, filepath)
+                st.info(f"'{filename}' downloaded successfully.")
+            except Exception as e:
+                st.error(f"Failed to download {filename}. Error: {e}")
+                return None  # Stop if any file fails to download
 
     try:
         with open(os.path.join(SAVE_DIR, 'gender_model.pkl'), 'rb') as f:
@@ -105,7 +112,8 @@ def extract_features(audio_path):
 def predict(audio_path):
     """Predicts gender and age group from an audio file."""
     if loaded_artifacts is None:
-        return "Error: Models are not loaded.", "Please check application logs."
+        # The error message for the user is now more specific
+        return "Error: Models are not loaded.", "Please check the app logs for download/loading errors."
     
     if not os.path.exists(audio_path):
         return "Error: Input audio file not found.", None
@@ -117,21 +125,18 @@ def predict(audio_path):
     feat = features.reshape(1, -1)
     
     try:
-        # Get models from the loaded artifacts dictionary
         gender_clf = loaded_artifacts['gender_model']
         age_clf = loaded_artifacts['age_model']
         age_le = loaded_artifacts['age_label_encoder']
 
-        # Predict gender
         gender_pred = gender_clf.predict(feat)[0]
         gender = 'Male' if gender_pred == 1 else 'Female'
         
-        # Predict age group
         age_pred_encoded = age_clf.predict(feat)[0]
         age_group = age_le.inverse_transform([age_pred_encoded])[0]
         
         age_group_display = age_group.capitalize()
-
         return gender, age_group_display
     except Exception as e:
         return f"Error during prediction: {str(e)}", None
+
