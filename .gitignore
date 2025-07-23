@@ -15,7 +15,7 @@ pip-freeze.txt
 # Data, Models, and User Submissions (IMPORTANT)
 data/
 user_submissions/
-saved_models/
+#saved_models/
 
 # IDE and OS specific
 .idea/
