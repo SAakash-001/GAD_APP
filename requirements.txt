@@ -16,7 +16,6 @@ moviepy
 
 # For showing the progress bar during model training
 tqdm
-# requirements.txt
 
 #for Fetching Files from Google Drive
 requests
