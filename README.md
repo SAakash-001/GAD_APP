@@ -6,7 +6,7 @@ Vocalytics is an intelligent web application that analyzes voice recordings to p
 ## 🚀 Live Demo
 
 
-**[➡️ Access the Live App Here](YOUR_STREAMLIT_APP_LINK_HERE)**
+**[➡️ Access the Live App Here](https://vocalytics.streamlit.app/)**
 
 
 ## ✨ Features
