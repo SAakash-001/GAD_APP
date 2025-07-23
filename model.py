@@ -15,11 +15,10 @@ os.makedirs(SAVE_DIR, exist_ok=True)
 # IMPORTANT: Replace these placeholder URLs with your actual direct download links.
 # If using Google Drive, use a direct link generator like https://www.gilthonwe.com/files/google-drive-direct-link-generator
 MODEL_URLS = {
-    "gender_model.pkl": "YOUR_DIRECT_DOWNLOAD_LINK_FOR_GENDER_MODEL",
-    "age_model.pkl": "YOUR_DIRECT_DOWNLOAD_LINK_FOR_AGE_MODEL",
-    "age_label_encoder.pkl": "YOUR_DIRECT_DOWNLOAD_LINK_FOR_AGE_ENCODER"
+    "gender_model.pkl": "https://drive.google.com/u/0/uc?id=1tmCjAANLNpVE2axNpHPo6IjF8Y42MPP2&export=download",
+    "age_model.pkl": "https://drive.google.com/u/0/uc?id=18YQNrUPGOEDvV3FXAOoqtFD_ujiyrXtb&export=download",
+    "age_label_encoder.pkl": "https://drive.google.com/u/0/uc?id=10RlIXKbTQY2aUXHQrqv9DTqNjK2xXXPR&export=download"
 }
-
 # --- Helper Function to Download Models ---
 def download_file(url, save_path):
     """Downloads a file from a URL, showing a progress bar."""
