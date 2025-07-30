@@ -7,7 +7,6 @@ import os
 import streamlit as st
 
 # --- Model Loading with Caching ---
-# This is now much simpler. The files are expected to be present locally.
 @st.cache_resource
 def load_all_artifacts():
     """
