@@ -8,10 +8,6 @@ import requests
 import pickle
 from tqdm import tqdm
 
-# --- Model and Encoder URLs ---
-# IMPORTANT: Replace these with your actual direct download links.
-# For Google Drive, you need to convert the sharing link to a direct download link.
-# A useful tool for this: https://www.gilthonwe.com/files/google-drive-direct-link-generator
 MODEL_URLS = {
     "gender_model.pkl": "https://drive.google.com/u/0/uc?id=1tmCjAANLNpVE2axNpHPo6IjF8Y42MPP2&export=download",
     "age_model.pkl": "https://drive.google.com/u/0/uc?id=18YQNrUPGOEDvV3FXAOoqtFD_ujiyrXtb&export=download",
